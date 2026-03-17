@@ -1,30 +1,12 @@
 import { useState, useEffect } from "react";
-import './App.css'
+
 function App() {
-  // 150+ so'zdan iborat ulkan baza
   const wordsDatabase = [
-    // Frontend & IT
     "javascript", "react", "typescript", "frontend", "backend", "developer", "component", "interface", 
     "performance", "function", "variable", "constant", "middleware", "database", "deployment", "optimization", 
     "algorithm", "framework", "library", "software", "hardware", "network", "server", "client", "security", 
-    "authentication", "authorization", "protocol", "json", "application", "browser", "document", "element", 
-    "attribute", "selector", "property", "inheritance", "prototype", "asynchronous", "callback", "promise", 
-    "payload", "response", "request", "endpoint", "version", "repository", "container", "virtual", "module",
-    
-    // Energetika va My NRG yo'nalishi
-    "energy", "solar", "charging", "battery", "voltage", "current", "electric", "power", "sustainable", 
-    "environment", "efficiency", "renewable", "panel", "station", "generator", "inverter", "grid", "consumption", 
-    "storage", "transformer", "circuit", "wattage", "megawatt", "kilowatt", "photovoltaic", "silicon", "carbon", 
-    "emission", "ecosystem", "resources", "installation", "maintenance", "monitoring", "capacity", "discharge",
-    
-    // Umumiy va murakkab so'zlar (tezlik uchun)
-    "keyboard", "monitor", "system", "design", "workflow", "process", "quality", "standard", "project", 
-    "management", "strategy", "analysis", "feedback", "experience", "solution", "product", "creative", 
-    "innovation", "technology", "communication", "community", "knowledge", "structure", "platform", "resource", 
-    "dynamic", "flexible", "parallel", "sequence", "internal", "external", "graphics", "resolution", "interaction", 
-    "animation", "transition", "transform", "opacity", "background", "overflow", "position", "relative", 
-    "absolute", "display", "flexbox", "direction", "content", "justify", "between", "around", "stretch",
-    "gradient", "shimmer", "highlight", "shadow", "border", "radius", "padding", "margin", "scrolling"
+    "authentication", "authorization", "protocol", "json", "application", "energy", "solar", "charging", 
+    "battery", "voltage", "current", "electric", "power", "sustainable", "environment", "efficiency"
   ];
 
   const shuffleWords = () => [...wordsDatabase].sort(() => Math.random() - 0.5);
@@ -35,8 +17,14 @@ function App() {
   const [score, setScore] = useState(0);
   const [time, setTime] = useState(60);
   const [isActive, setIsActive] = useState(true);
+  
+  // Responsive holatni kuzatish uchun state
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    
     if (!isActive) return;
     const interval = setInterval(() => {
       setTime((prev) => {
@@ -48,7 +36,11 @@ function App() {
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(interval);
+    
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearInterval(interval);
+    };
   }, [isActive]);
 
   const handleChange = (e) => {
@@ -76,12 +68,33 @@ function App() {
     setIsActive(true);
   };
 
+  // Ekran o'lchamiga qarab dinamik stillar
+  const isMobile = windowWidth < 600;
+
+  const dynamicStyles = {
+    card: {
+      ...styles.card,
+      width: isMobile ? "90%" : "550px",
+      padding: isMobile ? "30px 20px" : "60px",
+    },
+    wordBox: {
+      ...styles.wordBox,
+      fontSize: isMobile ? "32px" : "48px",
+      minHeight: isMobile ? "50px" : "70px",
+    },
+    title: {
+      ...styles.title,
+      fontSize: isMobile ? "8px" : "10px",
+      letterSpacing: isMobile ? "6px" : "12px",
+    }
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.glowBg}></div>
 
-      <div style={styles.card}>
-        <h1 style={styles.title}>NRG <span style={{color: '#00ff9f'}}>ULTRA</span> TYPING</h1>
+      <div style={dynamicStyles.card}>
+        <h1 style={dynamicStyles.title}>NRG <span style={{color: '#00ff9f'}}>ULTRA</span> TYPING</h1>
 
         <div style={styles.stats}>
           <div style={styles.statItem}>
@@ -94,11 +107,10 @@ function App() {
           </div>
         </div>
 
-        <div style={styles.wordBox}>
+        <div style={dynamicStyles.wordBox}>
           {words[currentWordIndex].split("").map((char, index) => {
             let color = "rgba(255,255,255,0.15)";
             let textShadow = "none";
-
             if (index < userInput.length) {
               if (char === userInput[index]) {
                 color = "#00ff9f";
@@ -108,7 +120,6 @@ function App() {
                 textShadow = "0 0 15px #ff4d4d";
               }
             }
-
             return (
               <span key={index} style={{ color, textShadow, transition: 'all 0.1s' }}>
                 {char}
@@ -123,15 +134,15 @@ function App() {
             value={userInput}
             onChange={handleChange}
             disabled={!isActive}
-            style={styles.input}
-            placeholder={isActive ? "Type now..." : "GAME OVER"}
+            style={{...styles.input, fontSize: isMobile ? "20px" : "26px"}}
+            placeholder={isActive ? "Type..." : "FINISH"}
             autoFocus
           />
           <div style={{...styles.inputLine, width: isActive ? '100%' : '0%'}}></div>
         </div>
 
         <button onClick={handleRestart} style={styles.button}>
-          INITIALIZE NEW SESSION
+          {isMobile ? "RESTART" : "INITIALIZE NEW SESSION"}
         </button>
       </div>
     </div>
@@ -146,7 +157,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontFamily: "'JetBrains Mono', monospace, 'Courier New'",
+    fontFamily: "monospace",
     color: "#fff",
     margin: 0,
     overflow: "hidden",
@@ -154,89 +165,81 @@ const styles = {
   },
   glowBg: {
     position: "absolute",
-    width: "800px",
-    height: "800px",
-    background: "radial-gradient(circle, rgba(0,255,159,0.03) 0%, rgba(0,0,0,0) 70%)",
+    width: "100%",
+    height: "100%",
+    background: "radial-gradient(circle at center, rgba(0,255,159,0.03) 0%, rgba(0,0,0,0) 70%)",
     zIndex: 0
   },
   card: {
     background: "rgba(10, 10, 10, 0.95)",
     backdropFilter: "blur(30px)",
-    padding: "60px",
     borderRadius: "20px",
     border: "1px solid rgba(255,255,255,0.03)",
     boxShadow: "0 40px 100px rgba(0,0,0,0.9)",
     textAlign: "center",
-    width: "550px",
-    zIndex: 1
+    zIndex: 1,
+    transition: "all 0.3s ease"
   },
   title: {
-    fontSize: "10px",
-    letterSpacing: "12px",
-    marginBottom: "60px",
+    marginBottom: "40px",
     color: "#444",
     textTransform: "uppercase"
   },
   stats: {
     display: "flex",
     justifyContent: "space-between",
-    marginBottom: "50px",
-    padding: "0 30px"
+    marginBottom: "30px",
+    padding: "0 10px"
   },
   statItem: {
     display: "flex",
     flexDirection: "column",
-    alignItems: "flex-start"
+    alignItems: "center"
   },
   label: {
     fontSize: "8px",
     color: "#333",
     letterSpacing: "2px",
-    marginBottom: "10px"
+    marginBottom: "5px"
   },
   value: {
-    fontSize: "36px",
-    fontWeight: "300",
-    fontFamily: "monospace"
+    fontSize: "28px",
+    fontWeight: "300"
   },
   wordBox: {
-    fontSize: "48px",
     fontWeight: "bold",
     letterSpacing: "4px",
-    marginBottom: "40px",
-    minHeight: "70px",
-    fontFamily: "monospace"
+    marginBottom: "30px",
+    wordBreak: "break-all" // Uzun so'zlar mobil ekranda sig'ishi uchun
   },
   inputWrapper: {
     position: "relative",
-    marginBottom: "50px"
+    marginBottom: "40px"
   },
   input: {
     width: "100%",
-    padding: "20px",
-    fontSize: "26px",
+    padding: "10px",
     background: "transparent",
     border: "none",
     outline: "none",
     color: "#fff",
     textAlign: "center",
-    letterSpacing: "4px"
+    letterSpacing: "2px"
   },
   inputLine: {
     height: "1px",
-    background: "linear-gradient(90deg, transparent, #333, #00ff9f, #333, transparent)",
-    transition: "width 0.8s ease"
+    background: "linear-gradient(90deg, transparent, #00ff9f, transparent)",
+    margin: "0 auto"
   },
   button: {
-    padding: "18px 45px",
+    padding: "15px 30px",
     background: "transparent",
-    border: "1px solid rgba(255,255,255,0.1)",
-    color: "#666",
+    border: "1px solid rgba(0,255,159,0.3)",
+    color: "#00ff9f",
     borderRadius: "4px",
     cursor: "pointer",
     fontSize: "10px",
-    letterSpacing: "3px",
-    transition: "all 0.3s",
+    letterSpacing: "2px",
     textTransform: "uppercase"
   }
 };
