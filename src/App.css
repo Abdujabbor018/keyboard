@@ -1,0 +1,11 @@
+/* index.css fayliga yoki shunga o'xshash joyga */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden; /* Sahifa qimirlamasligi uchun */
+}
