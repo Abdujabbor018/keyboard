@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import './App.css'
 function App() {
   const wordsDatabase = [
     "javascript", "react", "typescript", "frontend", "backend", "developer", "component", "interface", 
